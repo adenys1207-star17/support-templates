@@ -8,3 +8,5 @@ dist
 example.txt
 .vscode/*
 !.vscode/extensions.json
+
+.vercel

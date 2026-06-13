@@ -41,15 +41,15 @@ export const allTags = [
 
 // Метадані для блоків в UI.
 export const templateCategories = [
-  { id: 'core', name: 'Core', count: coreTemplates.length },
-  { id: 'esp', name: 'ESP', count: espExportTemplates.length },
-  { id: 'plugin', name: 'Plugin', count: pluginTemplates.length },
-  { id: 'editor', name: 'Editor', count: editorTemplates.length },
-  { id: 'new-editor', name: 'New Editor', count: newEditorTemplates.length },
-  { id: 'troubleshooting', name: 'Troubleshooting', count: troubleshootingTemplates.length },
-  { id: 'billing', name: 'Billing', count: billingTemplates.length },
-  { id: 'setup', name: 'Setup', count: setupTemplates.length },
-  { id: 'kb', name: 'Knowledge Base', count: knowledgeBaseTemplates.length }
+  { id: 'core',           code: 'GEN', label: 'General & First Response', count: coreTemplates.length },
+  { id: 'esp',            code: 'INT', label: 'Integrations & Export',    count: espExportTemplates.length },
+  { id: 'plugin',         code: 'PLG', label: 'Plugin',                   count: pluginTemplates.length },
+  { id: 'editor',         code: 'EDT', label: 'Editor & Blocks',          count: editorTemplates.length },
+  { id: 'new-editor',     code: 'NEW', label: 'New Editor',               count: newEditorTemplates.length },
+  { id: 'troubleshooting',code: 'TRB', label: 'Troubleshooting',          count: troubleshootingTemplates.length },
+  { id: 'billing',        code: 'BIL', label: 'Billing & Plans',          count: billingTemplates.length },
+  { id: 'setup',          code: 'ACC', label: 'Account & Access',         count: setupTemplates.length },
+  { id: 'kb',             code: 'KB',  label: 'Knowledge Base',           count: knowledgeBaseTemplates.length },
 ]
 
 // Загальний підрахунок — для info-line в UI

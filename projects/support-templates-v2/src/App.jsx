@@ -1,126 +1,76 @@
-import { useEffect, useState } from 'react'
-import { useTemplatesFilters } from './hooks/useTemplatesFilters.js'
-import { templates, allTags, totalTemplatesCount } from './data/templates/index.js'
-import TemplateCard from './components/TemplateCard.jsx'
-import TemplatePanel from './components/TemplatePanel.jsx'
+import { useCallback, useRef, useState } from 'react'
+import { templates, totalTemplatesCount, templateCategories } from './data/templates/index.js'
+import LibraryView from './components/LibraryView.jsx'
+import DetailView from './components/DetailView.jsx'
 import HelpCenterBrowser from './components/HelpCenterBrowser.jsx'
-import FilterPanel from './components/FilterPanel.jsx'
-
-const VIEWS = {
-  TEMPLATES: 'templates',
-  HELP_CENTER: 'help_center'
-}
+import Toast from './components/Toast.jsx'
 
 export default function App() {
-  const [view, setView] = useState(VIEWS.TEMPLATES)
-  const [search, setSearch] = useState('')
-  const [activeTags, setActiveTags] = useState([])
-  const [tagLogic, setTagLogic] = useState('AND')
-  const [category, setCategory] = useState(null)
-  const [selectedId, setSelectedId] = useState(templates[0].id)
-  const [filtersOpen, setFiltersOpen] = useState(false)
+  const [tab, setTab] = useState('templates')
+  const [query, setQuery] = useState('')
+  const [activeCat, setActiveCat] = useState('all')
+  const [selected, setSelected] = useState(null)
+  const [toast, setToast] = useState(null)
+  const toastTimer = useRef(null)
 
-  const { filtered, count, searchFiltered, categoryFiltered } = useTemplatesFilters(
-    templates,
-    { search, activeTags, tagLogic, category }
-  )
+  const showToast = useCallback((msg) => {
+    setToast(msg)
+    clearTimeout(toastTimer.current)
+    toastTimer.current = setTimeout(() => setToast(null), 1900)
+  }, [])
 
-  useEffect(() => {
-    if (filtered.length === 0) return
-    const isSelectedInFiltered = filtered.some((t) => t.id === selectedId)
-    if (!isSelectedInFiltered) {
-      setSelectedId(filtered[0].id)
-    }
-  }, [filtered, selectedId])
+  const openTemplate = useCallback((t) => {
+    setSelected(t)
+    window.scrollTo({ top: 0 })
+  }, [])
 
-  const selected =
-    templates.find((t) => t.id === selectedId) || filtered[0] || templates[0]
+  const back = useCallback(() => setSelected(null), [])
+
+  const copyTemplate = useCallback((tpl) => {
+    showToast('Copied “' + tpl.title + '”')
+  }, [showToast])
 
   return (
-    <div className="app">
-      <aside className="sidebar">
-        <div className="sidebar__head">
-          <p className="brand-eyebrow">Stripo · Night Shift</p>
-          <h1 className="brand">Бібліотека шаблонів</h1>
-          <p className="brand-sub">
-            {totalTemplatesCount} шаблонів · {allTags.length} тегів
-          </p>
-          <div className="view-switcher">
-            <button
-              className={`view-tab ${view === VIEWS.TEMPLATES ? 'active' : ''}`}
-              onClick={() => setView(VIEWS.TEMPLATES)}
-            >
-              Шаблони
-            </button>
-            <button
-              className={`view-tab ${view === VIEWS.HELP_CENTER ? 'active' : ''}`}
-              onClick={() => setView(VIEWS.HELP_CENTER)}
-            >
-              Help Center
-            </button>
-          </div>
+    <div className="app" data-nav="sidebar" data-cards="standard" data-density="comfortable" data-amber="confident">
+      <header className="masthead">
+        <div className="masthead-id">
+          <span className="eyebrow">Stripo · Night Shift</span>
+          <h1 className="font-display">Template Library</h1>
+          <span className="sub">
+            <b>{totalTemplatesCount}</b> templates · <b>{templateCategories.length}</b> categories
+          </span>
         </div>
+        <div className="tabs" role="tablist">
+          <button role="tab" aria-selected={tab === 'templates'} onClick={() => { setTab('templates'); setSelected(null) }}>
+            Templates
+          </button>
+          <button role="tab" aria-selected={tab === 'help'} onClick={() => setTab('help')}>
+            Help Center
+          </button>
+        </div>
+      </header>
 
-        {view === VIEWS.TEMPLATES && (
-          <>
-            <div className="search-wrap">
-              <input
-                type="search"
-                className="search-input"
-                placeholder="Пошук за назвою, текстом, тегом..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-              <p className="filter-status">
-                {count === totalTemplatesCount
-                  ? `${totalTemplatesCount} шаблонів`
-                  : `Знайдено ${count} з ${totalTemplatesCount}`}
-              </p>
-            </div>
+      {tab === 'help' ? (
+        <HelpCenterBrowser />
+      ) : selected ? (
+        <DetailView
+          t={selected}
+          onBack={back}
+          onOpen={openTemplate}
+          onToast={showToast}
+        />
+      ) : (
+        <LibraryView
+          query={query}
+          setQuery={setQuery}
+          activeCat={activeCat}
+          setActiveCat={setActiveCat}
+          onOpen={openTemplate}
+          onCopy={copyTemplate}
+        />
+      )}
 
-            <FilterPanel
-              isOpen={filtersOpen}
-              onToggle={() => setFiltersOpen((o) => !o)}
-              activeTags={activeTags}
-              setActiveTags={setActiveTags}
-              tagLogic={tagLogic}
-              setTagLogic={setTagLogic}
-              category={category}
-              setCategory={setCategory}
-              searchFiltered={searchFiltered}
-              categoryFiltered={categoryFiltered}
-            />
-
-            <div className="list-wrap">
-              {count === 0 && (
-                <p className="empty">Нічого не знайдено.</p>
-              )}
-              {filtered.map((t) => (
-                <TemplateCard
-                  key={t.id}
-                  template={t}
-                  isActive={t.id === selected.id}
-                  onClick={() => setSelectedId(t.id)}
-                />
-              ))}
-            </div>
-          </>
-        )}
-
-        {view === VIEWS.HELP_CENTER && (
-          <div className="sidebar-hint">
-            <p>
-              Browser статей Help Center справа. Шукай по всіх статтях, або
-              перемикайся між колекціями.
-            </p>
-          </div>
-        )}
-      </aside>
-
-      <main className="main">
-        {view === VIEWS.TEMPLATES && <TemplatePanel template={selected} />}
-        {view === VIEWS.HELP_CENTER && <HelpCenterBrowser />}
-      </main>
+      <Toast msg={toast} />
     </div>
   )
 }
